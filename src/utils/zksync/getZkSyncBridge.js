@@ -82,12 +82,12 @@ async function getExchangeAmount(address) {
     const response = await axios.get(url);
     AllData = [...AllData, ...response.data.items];
     nextLinks =
-        ZksEraApi + response.data.links.next;
-    while (nextLinks !== ZksEraApi) {
+        ZksEraApi + "/" + response.data.links.next;
+    while (nextLinks !== ZksEraApi + '/') {
         const response = await axios.get(nextLinks);
         AllData = [...AllData, ...response.data.items];
         nextLinks =
-            "https://block-explorer-api.mainnet.zksync.io/" +
+        ZksEraApi + "/" +
             response.data.links.next;
     }
     return getExchangeAmountProcessData(AllData, address);
