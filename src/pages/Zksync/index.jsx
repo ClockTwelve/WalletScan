@@ -12,10 +12,7 @@ import {
     Row,
     Col,
     InputNumber,
-    Badge,
     message,
-    Switch,
-    Pagination,
 } from 'antd';
 import {
     getEthBalance,
@@ -38,6 +35,9 @@ import {
     SettingOutlined,
     SyncOutlined,
     UploadOutlined,
+    HeartOutlined,
+    EyeOutlined,
+    EyeInvisibleOutlined,
 } from '@ant-design/icons';
 
 import { initZKAddress } from '@/composable/importAddress';
@@ -45,13 +45,13 @@ import { batchRefresh } from '@/composable/refreshTableData';
 
 const { TextArea } = Input;
 
-
 function Zksync() {
     const [batchProgress, setBatchProgress] = useState(0);
     const [batchLength, setBatchLength] = useState(0);
     const [batchloading, setBatchLoading] = useState(false);
     const [zkSyncConfigStore, setZkSyncConfigStore] = useState({});
     const [data, setData] = useState([]);
+    const [hideColumn, setHideColumn] = useState(false);
     const [isBatchModalVisible, setIsBatchModalVisible] = useState(false);
     const [isWalletModalVisible, setIsWalletModalVisible] = useState(false);
     const [batchForm] = Form.useForm();
@@ -304,21 +304,25 @@ function Zksync() {
         }
         setIsLoading(true);
         try {
-            const needRefreshList = selectedKeys.map(adr => {
-                const item = data.find(item => item.address === adr)
+            const needRefreshList = selectedKeys.map((adr) => {
+                const item = data.find((item) => item.address === adr);
                 return {
                     ...item,
-                }
+                };
             });
-            const newData = await batchRefresh(needRefreshList, 'zk')
-            setData(data.map(item => {
-                const adr = item.address;
-                const nData = newData.find(nItem => nItem.address === adr)
-                if(nData) {
-                    return nData
-                }
-                return item;
-            }));
+            const newData = await batchRefresh(needRefreshList, 'zk');
+            setData(
+                data.map((item) => {
+                    const adr = item.address;
+                    const nData = newData.find(
+                        (nItem) => nItem.address === adr
+                    );
+                    if (nData) {
+                        return nData;
+                    }
+                    return item;
+                })
+            );
         } catch (error) {
             notification.error(
                 {
@@ -333,7 +337,6 @@ function Zksync() {
             message.success('刷新成功');
         }
     };
-
     const handleBatchOk = async () => {
         try {
             setBatchLoading(true);
@@ -484,7 +487,16 @@ function Zksync() {
             message.success('批量添加成功');
         }
     };
+    const toggleHideColumn = () => {
+        setHideColumn(!hideColumn);
+    };
 
+    const getEyeIcon = () => {
+        if (hideColumn) {
+            return <EyeInvisibleOutlined />;
+        }
+        return <EyeOutlined />;
+    };
     const showModal = () => {
         setIsModalVisible(true);
     };
@@ -548,7 +560,6 @@ function Zksync() {
             key: 'index',
             align: 'center',
             render: (text, record, index) => index + 1,
-            // width: 34.5,
         },
         {
             title: '备注',
@@ -583,14 +594,27 @@ function Zksync() {
                     </>
                 );
             },
-            // width: 70
         },
         {
-            title: '钱包地址',
+            title: (
+                <span>
+                    钱包地址
+                    <span
+                        onClick={toggleHideColumn}
+                        style={{ marginLeft: 8, cursor: 'pointer' }}
+                    >
+                        {getEyeIcon()}
+                    </span>
+                </span>
+            ),
             dataIndex: 'address',
             key: 'address',
             align: 'center',
             render: (text, record) => {
+                if (hideColumn) {
+                    // 取前4位和后4位
+                    return text.slice(0, 4) + '***' + text.slice(-4);
+                }
                 return isRowSatisfyCondition(record) ? (
                     <div
                         style={{
@@ -604,7 +628,6 @@ function Zksync() {
                     text || <Spin />
                 );
             },
-            // width: 375
         },
         {
             title: 'ETH',
@@ -617,7 +640,6 @@ function Zksync() {
                     key: 'eth_balance',
                     align: 'center',
                     render: (text, record) => (text === null ? <Spin /> : text),
-                    // width: 60
                 },
                 {
                     title: 'Tx',
@@ -625,7 +647,6 @@ function Zksync() {
                     key: 'eth_tx_amount',
                     align: 'center',
                     render: (text, record) => (text === null ? <Spin /> : text),
-                    // width: 40
                 },
             ],
         },
@@ -640,7 +661,6 @@ function Zksync() {
                     key: 'zks1_balance',
                     align: 'center',
                     render: (text, record) => (text === null ? <Spin /> : text),
-                    // width: 60
                 },
                 {
                     title: 'Tx',
@@ -648,7 +668,6 @@ function Zksync() {
                     key: 'zks1_tx_amount',
                     align: 'center',
                     render: (text, record) => (text === null ? <Spin /> : text),
-                    // width: 34.5
                 },
             ],
         },
@@ -663,7 +682,6 @@ function Zksync() {
                     key: 'zks2_balance',
                     align: 'center',
                     render: (text, record) => (text === null ? <Spin /> : text),
-                    // width: 60
                 },
                 {
                     title: 'USDC',
@@ -671,7 +689,6 @@ function Zksync() {
                     key: 'zks2_usdcBalance',
                     align: 'center',
                     render: (text, record) => (text === null ? <Spin /> : text),
-                    // width: 63
                 },
                 {
                     title: 'Tx',
@@ -679,7 +696,6 @@ function Zksync() {
                     key: 'zks2_tx_amount',
                     align: 'center',
                     render: (text, record) => (text === null ? <Spin /> : text),
-                    // width: 34.2
                 },
                 {
                     title: '最后交易',
@@ -700,7 +716,6 @@ function Zksync() {
                                 {text}
                             </a>
                         ),
-                    // width: 77
                 },
                 {
                     title: '官方桥跨链Tx数',
@@ -713,7 +728,6 @@ function Zksync() {
                             align: 'center',
                             render: (text, record) =>
                                 text === null ? <Spin /> : text,
-                            // width: 60
                         },
                         {
                             title: 'L2->L1',
@@ -722,7 +736,6 @@ function Zksync() {
                             align: 'center',
                             render: (text, record) =>
                                 text === null ? <Spin /> : text,
-                            // width: 60
                         },
                     ],
                 },
@@ -737,7 +750,6 @@ function Zksync() {
                             align: 'center',
                             render: (text, record) =>
                                 text === null ? <Spin /> : text,
-                            // width: 75
                         },
                         {
                             title: 'L2->L1',
@@ -746,7 +758,6 @@ function Zksync() {
                             align: 'center',
                             render: (text, record) =>
                                 text === null ? <Spin /> : text,
-                            // width: 75
                         },
                     ],
                 },
@@ -761,7 +772,6 @@ function Zksync() {
                             align: 'center',
                             render: (text, record) =>
                                 text === null ? <Spin /> : text,
-                            // width: 34
                         },
                         {
                             title: '周',
@@ -770,7 +780,6 @@ function Zksync() {
                             align: 'center',
                             render: (text, record) =>
                                 text === null ? <Spin /> : text,
-                            // width: 34
                         },
                         {
                             title: '月',
@@ -779,7 +788,6 @@ function Zksync() {
                             align: 'center',
                             render: (text, record) =>
                                 text === null ? <Spin /> : text,
-                            // width: 34
                         },
                         {
                             title: '不同合约',
@@ -788,7 +796,6 @@ function Zksync() {
                             align: 'center',
                             render: (text, record) =>
                                 text === null ? <Spin /> : text,
-                            // width: 73.5
                         },
                         {
                             title: '金额(U)',
@@ -805,7 +812,6 @@ function Zksync() {
                             align: 'center',
                             render: (text, record) =>
                                 text === null ? <Spin /> : text,
-                            // width: 61.5
                         },
                     ],
                 },
@@ -886,7 +892,6 @@ function Zksync() {
                     okButtonProps={{ loading: isLoading }}
                     okText={'添加地址'}
                     cancelText={'取消'}
-                    // style={{zIndex: 3}}
                 >
                     <Form form={batchForm} layout="vertical">
                         <Form.Item
@@ -909,7 +914,6 @@ function Zksync() {
                     okButtonProps={{ loading: isLoading }}
                     okText={'添加地址'}
                     cancelText={'取消'}
-                    // style={{zIndex: 3}}
                 >
                     <Form form={form} layout="vertical">
                         <Form.Item
@@ -935,7 +939,6 @@ function Zksync() {
                     cancelText={'取消'}
                     width={700}
                     style={{ top: 10 }}
-                    // style={{zIndex: 3}}
                 >
                     <Form form={walletForm} layout="vertical">
                         <Card
@@ -1019,6 +1022,7 @@ function Zksync() {
                 </Modal>
                 <Spin spinning={tableLoading}>
                     <Table
+                        rowKey={(record) => record.key}
                         rowSelection={rowSelection}
                         dataSource={data}
                         pagination={false}
@@ -1026,7 +1030,6 @@ function Zksync() {
                         style={{ marginBottom: '20px', zIndex: 2 }}
                         size={'small'}
                         columns={columns}
-                        // sticky
                         summary={(pageData) => {
                             let ethBalance = 0;
                             let zks1Balance = 0;

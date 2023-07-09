@@ -1,5 +1,5 @@
 
-export const ZksEraApi = 'https://zksync2-mainnet-explorer.zksync.io';
+export const ZksEraApi = 'https://block-explorer-api.mainnet.zksync.io';
 
 export const ZksLiteApi = 'https://api.zksync.io/jsrpc';
 
